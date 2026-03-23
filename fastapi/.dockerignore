@@ -1,0 +1,14 @@
+# Backend .dockerignore (place in fastapi/)
+__pycache__
+*.pyc
+*.pyo
+.env
+.venv
+venv
+*.egg-info
+.pytest_cache
+.mypy_cache
+data/
+temp/
+generated_pdfs/
+*.gguf

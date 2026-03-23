@@ -1,0 +1,109 @@
+# Medical RAG — Docker Compose
+#
+# Folder structure:
+#   your-project/
+#   ├── docker-compose.yml
+#   ├── fastapi/          ← backend (bind mounted to /app)
+#   │   ├── main.py
+#   │   ├── .env
+#   │   └── Dockerfile
+#   └── frontend/         ← Next.js (bind mounted to /app)
+#       ├── package.json
+#       └── Dockerfile.dev
+#
+# Usage:
+#   docker compose up --build
+#   docker compose down
+#   docker compose down -v     # wipe volumes (fresh start)
+
+services:
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: medical_qdrant
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: medical_ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        SERVER_PID=$$!
+        echo "[ollama] waiting for server..."
+        sleep 5
+        echo "[ollama] pulling llama3.2:1b..."
+        ollama pull llama3.2:1b
+        echo "[ollama] pulling nomic-embed-text..."
+        ollama pull nomic-embed-text
+        echo "[ollama] models ready."
+        wait $$SERVER_PID
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: medical_backend
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./fastapi:/app
+      - backend_data:/app/data
+      - backend_temp:/app/temp
+      - backend_pdfs:/app/generated_pdfs
+      - ./fastapi/models:/app/models:ro
+    env_file:
+      - ./fastapi/.env
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - QDRANT_URL=http://qdrant:6333
+      - OLLAMA_URL=http://ollama:11434
+      - DATA_DIR=/app/data
+      - PDF_OUTPUT_DIR=/app/generated_pdfs
+      - WATCH_DIR=/app/data
+      - TZ=Asia/Kolkata
+    depends_on:
+      qdrant:
+        condition: service_started
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: medical_frontend
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  ollama_data:
+  backend_data:
+  backend_temp:
+  backend_pdfs:

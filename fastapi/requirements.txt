@@ -1,0 +1,32 @@
+# Core API
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+httpx>=0.27.0
+pydantic-settings>=2.2.0
+
+# LangChain + RAG
+langchain>=0.1.0
+langchain-community>=0.0.30
+langchain-text-splitters>=0.0.1
+
+# Vector DB
+qdrant-client>=1.9.0
+
+# Image CDN
+imagekitio>=3.2.0
+
+# Sensor / telemetry
+requests>=2.31.0
+thingspeak>=0.4.1
+
+# PDF generation
+reportlab>=4.1.0
+unstructured
+
+# ML / image processing
+tensorflow-cpu          # CPU-only inference, no CUDA needed
+opencv-python>=4.9.0
+Pillow>=10.3.0
+numpy>=1.26.0
+matplotlib>=3.8.0

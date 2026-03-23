@@ -1,0 +1,14 @@
+# frontend/Dockerfile.dev — Dev image with Next.js hot reload via bind mount
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install deps first (cached layer)
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Source is bind-mounted at runtime — no COPY needed
+EXPOSE 3000
+
+# next dev starts the hot-reload dev server
+CMD ["npm", "run", "dev"]
