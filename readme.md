@@ -20,6 +20,12 @@ Users can upload or capture a chest X-ray from their device camera. A pre-traine
 **4. EHR PDF Generation**
 When the user clicks Generate EHR, the system reads all stored patient data — latest vitals, ECG waveform, approved X-rays, clinical notes — and renders a professional multi-section medical PDF with normal reference ranges, abnormal value flagging, and a clinical disclaimer.
 
+
+![Chat Dashboard Screenshot](./images/Chat%20UI.png)
+<br/>
+<br/>
+![Electronics Health Report(EHR) Screenshot](./images/EHR%20.png)
+
 ---
 
 ## Architecture
